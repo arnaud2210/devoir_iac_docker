@@ -1,0 +1,87 @@
+#version: '3.8'
+services:
+  fastapi-ecommerce-demo:
+    restart: always
+    # build: ./fastapi-ecommerce-demo
+    image: "arnaud2210/fastapi-ecommerce-demo:prod"
+    # ports:
+    #  - "5005:5005"
+    networks:
+      - db_network
+      - web_network
+  
+  flask-material-kit:
+    restart: always
+    # build: ./flask-material-kit
+    image: "arnaud2210/flask-material-kit:prod"
+    # ports:
+    #  - "8000:8000"
+    networks:
+      - db_network
+      - web_network
+    
+  ecommerce-fastapi-stripe:
+    restart: always
+    # build: ./ecommerce-fastapi-stripe
+    image: "arnaud2210/ecommerce-fastapi-strip:prod"
+    # ports:
+    #  - "7000:7000"
+    networks:
+      - db_network
+      - web_network
+  
+  ecommerce-flask-stripe:
+    restart: always
+    # build: ./ecommerce-flask-stripe
+    image: "arnaud2210/ecommerce-flask-stripe:prod"
+    ports:
+      - "80:80"
+    networks:
+      - db_network
+      - web_network
+  
+  ecommerce-flask-stripe-replicas:
+    restart: always
+    build: ./ecommerce-flask-stripe
+    deploy:
+      replicas: 5
+    ports:
+      - "81-86:80"
+    networks:
+      - db_network
+      - web_network
+  
+  flask-black-dashboard:
+    restart: always
+    #build: ./flask-black-dashboard
+    image: "arnaud2210/flask-black-dashboard:prod"
+    # ports:
+    #  - "5085:5085"
+    networks:
+      - db_network
+      - web_network
+  
+  nginx:
+    restart: always
+    image: "nginx:mainline-alpine3.20-slim"
+    ports:
+      - "7010:7010"
+      - "7011:7011"
+      - "7012:7012"
+      - "7013:7013"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    networks:
+      - web_network
+    depends_on: 
+      - fastapi-ecommerce-demo
+      - flask-material-kit
+      - ecommerce-fastapi-stripe
+      - flask-black-dashboard
+  
+networks:
+  db_network:
+    driver: bridge
+  web_network:
+    driver: bridge
+ 
